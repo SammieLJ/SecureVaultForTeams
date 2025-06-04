@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SecureVaultForTeams")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5f9c99235f1c136d1032144f6273fe36864be1f7")]
 [assembly: System.Reflection.AssemblyProductAttribute("SecureVaultForTeams")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SecureVaultForTeams")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

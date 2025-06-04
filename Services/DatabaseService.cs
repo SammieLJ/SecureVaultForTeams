@@ -69,6 +69,7 @@ public class DatabaseService
         return _teams.Delete(id);
     }
     
+    public List<Team> GetAllTeams() => _teams.FindAll().ToList();
 
     // Entry methods
     public List<Entry> GetEntriesByTeam(string teamId) =>
@@ -130,5 +131,15 @@ public class DatabaseService
         }
 
         return await Task.FromResult(entries);
+    }
+    
+    public bool UpdateUser(User user)
+    {
+        return _users.Update(user);
+    }
+
+    public bool DeleteUser(string userId)
+    {
+        return _users.Delete(userId);
     }
 }
