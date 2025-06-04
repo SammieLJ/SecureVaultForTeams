@@ -1,0 +1,320 @@
+﻿@page
+@using Microsoft.Extensions.DependencyInjection
+@using SecureVaultForTeams.Services
+@model IndexModel
+@{
+    ViewData["Title"] = "Home";
+}
+
+<div class="container mt-4">
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <h2>Password Entries</h2>
+        </div>
+        <div class="col-md-6 text-end">
+            <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createEntryModal">
+                <i class="bi bi-plus-circle mt-me-2"></i> Add Entry
+            </a>
+            @if (User.IsInRole("Admin"))
+            {
+                <a href="/ManageTeams" class="btn btn-secondary">
+                    <i class="bi bi-people ms-2"></i> Manage Teams
+                </a>
+            }
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header bg-light">
+            <form method="get" class="mb-0">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-search"></i></span>
+                            <input type="text" id="searchInput" name="search" class="form-control" placeholder="Search entries..." value="@Model.SearchTerm">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <select id="categoryFilter" name="category" class="form-select" onchange="this.form.submit()">
+                            <option value="">All Categories</option>
+                            @if (Model.Categories != null)
+                            {
+                                foreach (var category in Model.Categories)
+                                {
+                                    if (!string.IsNullOrWhiteSpace(category))
+                                    {
+                                        <option value="@category" selected="@(Request.Query["category"] == category ? "selected" : null)">@category</option>
+                                    }
+                                }
+                            }
+                        </select>
+                    </div>
+                    @if (User.IsInRole("Admin"))
+                    {   <div class="col-md-2 d-flex input-group-text align-items-center">
+                            <div class="form-check ms-auto">
+                                <input class="form-check-input" type="checkbox" value="true" id="showDeletedCheckbox" name="showDeleted" onchange="this.form.submit()" @(Request.Query["showDeleted"] == "true" ? "checked" : "")>
+                                <label class="form-check-label text-end" for="showDeletedCheckbox">Show Deleted</label>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </form>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table id="entriesTable" class="table table-striped table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Title</th>
+                            <th>Username</th>
+                            <th>Category</th>
+                            <th>Type</th>
+                            <th>Last Modified</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var entry in Model.Entries)
+                        {
+                            <tr class="entry-row"
+                                data-title="@entry.Title.ToLower()"
+                                data-username="@entry.Username.ToLower()"
+                                data-category="@entry.Category"
+                                data-deleted="@entry.Deleted.ToString().ToLower()">
+                                <td>@entry.Title</td>
+                                <td>@entry.Username</td>
+                                <td><span class="badge bg-info">@entry.Category</span></td>
+                                <td>@entry.Type</td>
+                                <td>@(entry.LastModified != default ? entry.LastModified.ToString("g") : "-")</td>
+                                <td class="text-center">
+                                    <a href="#" class="btn btn-sm btn-outline-primary view-entry"
+                                       data-entry-id="@entry.Id" data-bs-toggle="modal" data-bs-target="#viewEntryModal">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a href="#" class="btn btn-sm btn-outline-secondary edit-entry"
+                                       data-entry-id="@entry.Id">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        @if (Model.ShowPagination)
+        {
+            <div class="card-footer">
+                <nav>
+                    <ul class="pagination justify-content-center mb-0">
+@{
+    // Build the base query string with all current filters
+    var query = System.Web.HttpUtility.ParseQueryString(string.Empty);
+    query["search"] = Model.SearchTerm;
+    query["category"] = Request.Query["category"];
+    if (Request.Query["showDeleted"] == "true")
+    {
+        query["showDeleted"] = "true";
+    }
+    query["pageSize"] = Model.PageSize.ToString();
+}
+@for (int i = 1; i <= Model.TotalPages; i++)
+{
+    query["currentPage"] = i.ToString();
+    <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+        <a class="page-link" href="?@query">@i</a>
+    </li>
+}
+                    </ul>
+                </nav>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- View Entry Modal -->
+<div class="modal fade" id="viewEntryModal" tabindex="-1" aria-labelledby="viewEntryModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewEntryModalLabel">Entry Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="viewEntryContent">
+                <div class="text-center">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create Entry Modal -->
+<div class="modal fade" id="createEntryModal" tabindex="-1" aria-labelledby="createEntryModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+            <h5 class="modal-title" id="createEntryModalLabel">Create New Entry</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form id="createEntryForm" method="post" asp-page-handler="CreateEntry">
+            <div class="modal-body">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                <div class="mb-3">
+                    <label asp-for="Entry.Title" class="form-label">Title</label>
+                    <input asp-for="Entry.Title" class="form-control" required />
+                    <span asp-validation-for="Entry.Title" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Entry.Username" class="form-label">Username</label>
+                    <input asp-for="Entry.Username" class="form-control" />
+                    <span asp-validation-for="Entry.Username" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Entry.Password" class="form-label">Password</label>
+                    <div class="input-group">
+                        <input asp-for="Entry.Password" type="password" class="form-control" id="passwordInput" />
+                        <button type="button" class="btn btn-outline-secondary" id="togglePassword">
+                            <i class="bi bi-eye" id="togglePasswordIcon"></i>
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" id="generatePassword">Generate</button>
+                    </div>
+                    <span asp-validation-for="Entry.Password" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Entry.Url" class="form-label">URL</label>
+                    <input asp-for="Entry.Url" type="url" class="form-control" />
+                    <span asp-validation-for="Entry.Url" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Entry.Notes" class="form-label">Notes</label>
+                    <textarea asp-for="Entry.Notes" class="form-control" rows="3"></textarea>
+                    <span asp-validation-for="Entry.Notes" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Entry.Category" class="form-label">Category</label>
+                    <select asp-for="Entry.Category" class="form-select" required id="categoryDropdown">
+                        <option value="">Select a category...</option>
+                        @foreach (var category in Model.Categories)
+                        {
+                            <option value="@category">@category</option>
+                        }
+                    </select>
+                    <span asp-validation-for="Entry.Category" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <label asp-for="Entry.TeamId" class="form-label">Team</label>
+                        <select asp-for="Entry.TeamId" class="form-select" required id="teamDropdown">
+                            <option value="">Select a team...</option>
+                            @foreach (var team in Model.Teams)
+                            {
+                                <option value="@team.Id">@team.Name</option>
+                            }
+                        </select>
+                        <span asp-validation-for="Entry.TeamId" class="text-danger"></span>
+                    }
+                    else
+                    {
+                        <input type="hidden" asp-for="Entry.TeamId" />
+                    }
+                </div>
+            </div>
+            <div class="modal-footer justify-content-between">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="submit" class="btn btn-primary">Create Entry</button>                </div>
+        </form>
+
+        <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+        <script>
+            // Toggle password visibility
+            document.getElementById('togglePassword').addEventListener('click', function () {
+                var passwordInput = document.getElementById('passwordInput');
+                var icon = document.getElementById('togglePasswordIcon');
+                if (passwordInput.type === 'password') {
+                    passwordInput.type = 'text';
+                    icon.classList.remove('bi-eye');
+                    icon.classList.add('bi-eye-slash');
+                } else {
+                    passwordInput.type = 'password';
+                    icon.classList.remove('bi-eye-slash');
+                    icon.classList.add('bi-eye');
+                }
+            });
+
+            // Generate random password
+            document.getElementById('generatePassword').addEventListener('click', function () {
+                var passwordInput = document.getElementById('passwordInput');
+                passwordInput.value = generatePassword(16);
+            });
+
+            function generatePassword(length) {
+                var charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!%^#&*()_-+=<>?';
+                var password = "";
+                for (var i = 0, n = charset.length; i < length; ++i) {
+                    password += charset.charAt(Math.floor(Math.random() * n));
+                }
+                return password;
+            }
+        </script>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Handle clicking on view entry button
+            $('.view-entry').click(function() {
+                var entryId = $(this).data('entry-id');
+                $('#viewEntryContent').html('<div class="text-center"><div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div></div>');
+
+                // Load entry details via AJAX
+                $.get('/ViewEntry?id=' + entryId, function(data) {
+                    $('#viewEntryContent').html(data);
+                });
+            });
+
+            // Handle clicking on edit entry button
+            $('.edit-entry').click(function() {
+                var entryId = $(this).data('entry-id');
+                window.location.href = '/EditEntry?id=' + entryId;
+            });
+
+            // Populate dropdowns when createEntryModal is shown
+            $('#createEntryModal').on('show.bs.modal', function () {
+                $.getJSON('?handler=CreateEntry', function(data) {
+                    // Populate Categories
+                    var $cat = $('#categoryDropdown');
+                    $cat.empty();
+                    $cat.append('<option value="">Select a category...</option>');
+                    if (data.categories) {
+                        data.categories.forEach(function(category) {
+                            $cat.append('<option value="' + category + '">' + category + '</option>');
+                        });
+                    }
+                    // Populate Teams (if present)
+                    var $team = $('#teamDropdown');
+                    if ($team.length && data.teams) {
+                        $team.empty();
+                        $team.append('<option value="">Select a team...</option>');
+                        data.teams.forEach(function(team) {
+                            $team.append('<option value="' + team.id + '">' + team.name + '</option>');
+                        });
+                    }
+                });
+            }); // end of populate dropdowns
+        });
+    </script>
+}
+

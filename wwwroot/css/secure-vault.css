@@ -1,0 +1,54 @@
+/* Custom styles for SecureVault */
+
+.table-responsive {
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+.toggle-password {
+    cursor: pointer;
+}
+
+.password-cell {
+    font-family: monospace;
+}
+
+/* Add some padding to the main content */
+.container-fluid {
+    padding: 20px;
+}
+
+/* Style for the search form */
+.search-form {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+/* Style for buttons */
+.btn-outline-secondary {
+    border-color: #dee2e6;
+}
+
+.btn-outline-secondary:hover {
+    background-color: #e9ecef;
+    border-color: #dee2e6;
+}
+
+/* Modal styles */
+.modal-content {
+    border-radius: 8px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.15);
+}
+
+.modal-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+}
+
+/* Form styles */
+.form-control:focus {
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.15);
+}

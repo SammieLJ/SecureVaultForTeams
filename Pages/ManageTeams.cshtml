@@ -1,0 +1,181 @@
+﻿@page
+@model ManageTeamsModel
+@{
+    ViewData["Title"] = "Manage Teams";
+}
+
+<div class="container mt-4">
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <h2>Team Management</h2>
+        </div>
+        <div class="col-md-6 text-end">
+            <a href="/Index" class="btn btn-secondary">
+                <i class="bi bi-house-door-fill me-2"></i> Back Home
+            </a>
+            <a href="#" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createTeamModal">
+                <i class="bi bi-plus-circle ms-2"></i> Create Team
+            </a>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header bg-light">
+            <div class="row">
+                <div class="col">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-search"></i></span>
+                        <input type="text" id="searchTeams" class="form-control" placeholder="Search teams..."
+                               onkeyup="filterTeams()">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table id="teamsTable" class="table table-striped table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Name</th>
+                            <th>Description</th>
+                            <th>Members</th>
+                            <th>Created</th>
+                            <th class="text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var team in Model.Teams)
+                        {
+                            <tr class="team-row" data-name="@team.Name.ToLower()">
+                                <td>@team.Name</td>
+                                <td>@team.Description</td>
+                                <td>@team.MemberCount</td>
+                                <td>@team.Created.ToString("g")</td>
+                                <td class="text-center">
+                                    <a href="#" class="btn btn-sm btn-outline-primary"
+                                       onclick="editTeam('@team.Id')">
+                                        <i class="bi bi-pencil"></i> Edit
+                                    </a>
+                                    <a href="#" class="btn btn-sm btn-outline-danger"
+                                       onclick="confirmDeleteTeam('@team.Id', '@team.Name')">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create Team Modal -->
+<div class="modal fade" id="createTeamModal" tabindex="-1" aria-labelledby="createTeamModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createTeamModalLabel">Create New Team</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" asp-page-handler="CreateTeam">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="teamName" class="form-label">Team Name</label>
+                        <input type="text" class="form-control" id="teamName" name="Name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="teamDescription" class="form-label">Description</label>
+                        <textarea class="form-control" id="teamDescription" name="Description" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Team</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Team Modal -->
+<div class="modal fade" id="editTeamModal" tabindex="-1" aria-labelledby="editTeamModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editTeamModalLabel">Edit Team</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" asp-page-handler="UpdateTeam">
+                <input type="hidden" id="editTeamId" name="Id">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="editTeamName" class="form-label">Team Name</label>
+                        <input type="text" class="form-control" id="editTeamName" name="Name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editTeamDescription" class="form-label">Description</label>
+                        <textarea class="form-control" id="editTeamDescription" name="Description" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteTeamModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete the team "<span id="deleteTeamName"></span>"?</p>
+                <p class="text-danger">This action cannot be undone. All entries associated with this team will also be deleted.</p>
+            </div>
+            <div class="modal-footer">
+                <form method="post" asp-page-handler="DeleteTeam">
+                    <input type="hidden" id="deleteTeamId" name="Id">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Delete Team</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function filterTeams() {
+            var searchText = $('#searchTeams').val().toLowerCase();
+
+            $('.team-row').each(function() {
+                var name = $(this).data('name');
+                $(this).toggle(name.includes(searchText));
+            });
+        }
+
+        function editTeam(teamId) {
+            // Fetch team details via AJAX
+            $.getJSON('/api/teams/' + teamId, function(team) {
+                $('#editTeamId').val(team.id);
+                $('#editTeamName').val(team.name);
+                $('#editTeamDescription').val(team.description);
+                $('#editTeamModal').modal('show');
+            });
+        }
+
+        function confirmDeleteTeam(teamId, teamName) {
+            $('#deleteTeamId').val(teamId);
+            $('#deleteTeamName').text(teamName);
+            $('#deleteTeamModal').modal('show');
+        }
+    </script>
+}
+

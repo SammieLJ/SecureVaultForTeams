@@ -1,0 +1,115 @@
+@page
+@model CreateEntryModel
+
+<div class="modal-header">
+    <h5 class="modal-title" id="createEntryModalLabel">Create New Entry</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+<form id="createEntryForm" method="post">
+    <div class="modal-body">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        
+        <div class="mb-3">
+            <label asp-for="Entry.Title" class="form-label">Title</label>
+            <input asp-for="Entry.Title" class="form-control" required />
+            <span asp-validation-for="Entry.Title" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Entry.Username" class="form-label">Username</label>
+            <input asp-for="Entry.Username" class="form-control" />
+            <span asp-validation-for="Entry.Username" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Entry.Password" class="form-label">Password</label>
+            <div class="input-group">
+                <input asp-for="Entry.Password" type="password" class="form-control" id="passwordInput" />
+                <button type="button" class="btn btn-outline-secondary" id="togglePassword">
+                    <i class="bi bi-eye" id="togglePasswordIcon"></i>
+                </button>
+                <button type="button" class="btn btn-outline-secondary" id="generatePassword">Generate</button>
+            </div>
+            <span asp-validation-for="Entry.Password" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Entry.Url" class="form-label">URL</label>
+            <input asp-for="Entry.Url" type="url" class="form-control" />
+            <span asp-validation-for="Entry.Url" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Entry.Notes" class="form-label">Notes</label>
+            <textarea asp-for="Entry.Notes" class="form-control" rows="3"></textarea>
+            <span asp-validation-for="Entry.Notes" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Entry.Category" class="form-label">Category</label>
+            <select asp-for="Entry.Category" class="form-select" required>
+                <option value="">Select a category...</option>
+                @foreach (var category in Model.Categories)
+                {
+                    <option value="@category">@category</option>
+                }
+            </select>
+            <span asp-validation-for="Entry.Category" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            @if (User.IsInRole("Admin"))
+            {
+                <label asp-for="Entry.TeamId" class="form-label">Team</label>
+                <select asp-for="Entry.TeamId" class="form-select" required>
+                    <option value="">Select a team...</option>
+                    @foreach (var team in Model.Teams)
+                    {
+                        <option value="@team.Id">@team.Name</option>
+                    }
+                </select>
+                <span asp-validation-for="Entry.TeamId" class="text-danger"></span>
+            }
+            else
+            {
+                <input type="hidden" asp-for="Entry.TeamId" />
+            }
+        </div>
+    </div>
+    <div class="modal-footer justify-content-between">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="submit" class="btn btn-primary">Create Entry</button>                </div>
+</form>
+
+<script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+<script>
+    // Toggle password visibility
+    document.getElementById('togglePassword').addEventListener('click', function () {
+        var passwordInput = document.getElementById('passwordInput');
+        var icon = document.getElementById('togglePasswordIcon');
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            icon.classList.remove('bi-eye');
+            icon.classList.add('bi-eye-slash');
+        } else {
+            passwordInput.type = 'password';
+            icon.classList.remove('bi-eye-slash');
+            icon.classList.add('bi-eye');
+        }
+    });
+
+    // Generate random password
+    document.getElementById('generatePassword').addEventListener('click', function () {
+        var passwordInput = document.getElementById('passwordInput');
+        passwordInput.value = generatePassword(16);
+    });
+
+    function generatePassword(length) {
+        var charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!%^#&*()_-+=<>?';
+        var password = "";
+        for (var i = 0, n = charset.length; i < length; ++i) {
+            password += charset.charAt(Math.floor(Math.random() * n));
+        }
+        return password;
+    }
+</script>

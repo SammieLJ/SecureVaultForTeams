@@ -1,0 +1,124 @@
+﻿@page
+@model EditEntryModel
+@{
+    ViewData["Title"] = "Edit Entry";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Edit Entry</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        <input type="hidden" asp-for="Entry.Id" />
+                        <input type="hidden" asp-for="Entry.TeamId" />
+                        <input type="hidden" asp-for="Entry.Created" />
+                        
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="Entry.Title" class="form-label">Title</label>
+                            <input asp-for="Entry.Title" class="form-control" required />
+                            <span asp-validation-for="Entry.Title" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Entry.Username" class="form-label">Username</label>
+                            <input asp-for="Entry.Username" class="form-control" />
+                            <span asp-validation-for="Entry.Username" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Entry.Password" class="form-label">Password</label>
+                            <div class="input-group">
+                                <input asp-for="Entry.Password" type="password" class="form-control" id="password-field" />
+                                <button type="button" class="btn btn-outline-secondary toggle-password">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                            <span asp-validation-for="Entry.Password" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Entry.Url" class="form-label">URL</label>
+                            <input asp-for="Entry.Url" type="url" class="form-control" />
+                            <span asp-validation-for="Entry.Url" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Entry.Notes" class="form-label">Notes</label>
+                            <textarea asp-for="Entry.Notes" class="form-control" rows="3"></textarea>
+                            <span asp-validation-for="Entry.Notes" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Entry.Category" class="form-label">Category</label>
+                            <select asp-for="Entry.Category" class="form-select" required>
+                                <option value="">Select a category...</option>
+                                @foreach (var category in Model.Categories)
+                                {
+                                    <option value="@category">@category</option>
+                                }
+                            </select>
+                            <span asp-validation-for="Entry.Category" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <label asp-for="Entry.TeamId" class="form-label">Team</label>
+                                <select asp-for="Entry.TeamId" class="form-select" required>
+                                    <option value="">Select a team...</option>
+                                    @foreach (var team in Model.Teams)
+                                    {
+                                        <option value="@team.Id">@team.Name</option>
+                                    }
+                                </select>
+                                <span asp-validation-for="Entry.TeamId" class="text-danger"></span>
+                            }
+                            else
+                            {
+                                <input type="hidden" asp-for="Entry.TeamId" />
+                            }
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a asp-page="/Index" class="btn btn-secondary me-md-2">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <form method="post" asp-page-handler="Delete" onsubmit="return confirm('Are you sure you want to delete this entry?');" class="d-inline">
+                                    <input type="hidden" asp-for="Entry.Id" />
+                                    <button type="submit" class="btn btn-danger ms-2">Delete</button>
+                                </form>
+                            }
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Toggle password visibility
+        document.querySelector('.toggle-password').addEventListener('click', function() {
+            const passwordField = document.getElementById('password-field');
+            const icon = this.querySelector('i');
+            
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text';
+                icon.classList.remove('bi-eye');
+                icon.classList.add('bi-eye-slash');
+            } else {
+                passwordField.type = 'password';
+                icon.classList.remove('bi-eye-slash');
+                icon.classList.add('bi-eye');
+            }
+        });
+    </script>
+}

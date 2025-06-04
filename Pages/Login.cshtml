@@ -1,0 +1,75 @@
+@page
+@model LoginModel
+@{
+    ViewData["Title"] = "Login";
+    Layout = "_Layout";
+}
+
+<div class="container">
+    <div class="row justify-content-center mt-5">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="text-center">SecureVault for Teams</h3>
+                </div>                
+                <div class="card-body">
+                    <form method="post" asp-page="/Login" asp-route-returnUrl="@Request.Query["ReturnUrl"]">
+                        @Html.AntiForgeryToken()
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        <div class="form-group mb-3">
+                            <label asp-for="Username">Username</label>
+                            <input asp-for="Username" class="form-control" required />
+                            <span asp-validation-for="Username" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="Password">Password</label>
+                            <input asp-for="Password" type="password" class="form-control" required />
+                            <span asp-validation-for="Password" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <label asp-for="TeamId">Team</label>
+                            <select asp-for="TeamId" class="form-select" data-val="false">
+                                <option value="">Select a team...</option>
+                                @foreach (var team in Model.Teams)
+                                {
+                                    <option value="@team.Id">@team.Name</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div class="form-group mb-3">
+                            <div class="form-check">
+                                <input asp-for="RememberMe" class="form-check-input" type="checkbox" />
+                                <label asp-for="RememberMe" class="form-check-label">Remember me</label>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary">Login</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Always allow form submission for admin (or anyone) even if no team is selected
+        document.querySelector('form').addEventListener('submit', function(e) {
+            var username = document.querySelector('input[name="Username"]').value;
+            var teamSelect = document.querySelector('select[name="TeamId"]');
+            // If username is 'admin', remove required attribute and validation from team select
+            if (username.trim().toLowerCase() === 'admin') {
+                if (teamSelect) {
+                    teamSelect.removeAttribute('required');
+                    teamSelect.removeAttribute('data-val-required');
+                }
+            }
+        });
+    </script>
+}

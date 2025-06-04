@@ -1,0 +1,99 @@
+﻿@page
+@model ViewEntryModel
+@{
+    Layout = null;
+}
+
+@if (Model.Entry != null)
+{
+    <div class="container">
+        <div class="row mb-3">
+            <div class="col-md-3 text-muted">Title:</div>
+            <div class="col-md-9"><strong>@Model.Entry.Title</strong></div>
+        </div>
+        
+        <div class="row mb-3">
+            <div class="col-md-3 text-muted">Username:</div>
+            <div class="col-md-9">@Model.Entry.Username</div>
+        </div>
+        
+        <div class="row mb-3">
+            <div class="col-md-3 text-muted">Password:</div>
+            <div class="col-md-9">
+                <div class="input-group">
+                    <input type="password" class="form-control" id="password-field" value="@Model.Entry.Password" readonly>
+                    <button class="btn btn-outline-secondary toggle-password" type="button">
+                        <i class="bi bi-eye"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        @if (!string.IsNullOrEmpty(Model.Entry.Url))
+        {
+            <div class="row mb-3">
+                <div class="col-md-3 text-muted">URL:</div>
+                <div class="col-md-9">
+                    <a href="@Model.Entry.Url" target="_blank">@Model.Entry.Url</a>
+                </div>
+            </div>
+        }
+        
+        @if (!string.IsNullOrEmpty(Model.Entry.Notes))
+        {
+            <div class="row mb-3">
+                <div class="col-md-3 text-muted">Notes:</div>
+                <div class="col-md-9">@Model.Entry.Notes</div>
+            </div>
+        }
+        
+        <div class="row mb-3">
+            <div class="col-md-3 text-muted">Category:</div>
+            <div class="col-md-9"><span class="badge bg-info">@Model.Entry.Category</span></div>
+        </div>
+        
+        <div class="row mb-3">
+            <div class="col-md-3 text-muted">Type:</div>
+            <div class="col-md-9">@Model.Entry.Type</div>
+        </div>
+        
+        <div class="row mb-3">
+            <div class="col-md-3 text-muted">Team info:</div>
+            <div class="col-md-9">@Model.Entry.TeamName</div>
+        </div>
+        
+        <div class="row mb-3">
+            <div class="col-md-3 text-muted">Created:</div>
+            <div class="col-md-9">@Model.Entry.CreatedAt.ToString("g")</div>
+        </div>
+        
+        <div class="row mb-3">
+            <div class="col-md-3 text-muted">Last Modified:</div>
+            <div class="col-md-9">@Model.Entry.UpdatedAt.ToString("g")</div>
+        </div>
+    </div>
+    
+    <script>
+        // Toggle password visibility
+        document.querySelector('.toggle-password').addEventListener('click', function() {
+            const passwordField = document.getElementById('password-field');
+            const icon = this.querySelector('i');
+            
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text';
+                icon.classList.remove('bi-eye');
+                icon.classList.add('bi-eye-slash');
+            } else {
+                passwordField.type = 'password';
+                icon.classList.remove('bi-eye-slash');
+                icon.classList.add('bi-eye');
+            }
+        });
+    </script>
+}
+else
+{
+    <div class="alert alert-warning">
+        Entry not found or you don't have permission to view it.
+    </div>
+}
