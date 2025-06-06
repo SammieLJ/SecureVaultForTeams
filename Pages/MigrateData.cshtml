@@ -22,7 +22,27 @@
         <button type="submit" name="action" value="import" class="btn btn-danger mt-2">Import data.json to LiteDB</button>
         <span class="ms-2">Replaces all data in LiteDB with <code>data.json</code></span>
     </div>
+    <hr />
+    <div class="mb-3">
+        <label for="plainPassword" class="form-label">Password to Hash</label>
+        <input type="text" class="form-control" id="plainPassword" name="plainPassword" placeholder="Enter password to hash" />
+        <button type="submit" name="action" value="hash" class="btn btn-secondary mt-2">Generate Hash</button>
+        @if (!string.IsNullOrEmpty(Model.HashResult))
+        {
+            <div class="alert alert-success mt-2">Hash: <code>@Model.HashResult</code></div>
+        }
+    </div>
+    <div class="mb-3">
+        <label for="hashToCheck" class="form-label">Hash to Check</label>
+        <input type="text" class="form-control" id="hashToCheck" name="hashToCheck" placeholder="Enter hash to check" />
+        <label for="passwordToCheck" class="form-label mt-2">Password to Check Against Hash</label>
+        <input type="text" class="form-control" id="passwordToCheck" name="passwordToCheck" placeholder="Enter password to check" />
+        <button type="submit" name="action" value="verify" class="btn btn-info mt-2">Verify Password</button>
+        @if (!string.IsNullOrEmpty(Model.VerifyResult))
+        {
+            <div class="alert alert-info mt-2">@Model.VerifyResult</div>
+        }
+    </div>
 </form>
 
 <a href="/Index" class="btn btn-secondary mt-3">Back to Home</a>
-
