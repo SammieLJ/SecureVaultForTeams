@@ -70,6 +70,7 @@
                         <tr>
                             <th>Title</th>
                             <th>Username</th>
+                            <th>Team</th>
                             <th>Category</th>
                             <th>Type</th>
                             <th>Last Modified</th>
@@ -82,10 +83,12 @@
                             <tr class="entry-row"
                                 data-title="@entry.Title.ToLower()"
                                 data-username="@entry.Username.ToLower()"
+                                data-username="@entry.TeamName.ToLower()"
                                 data-category="@entry.Category"
                                 data-deleted="@entry.Deleted.ToString().ToLower()">
                                 <td>@entry.Title</td>
                                 <td>@entry.Username</td>
+                                <td>@entry.TeamName</td>
                                 <td><span class="badge bg-info">@entry.Category</span></td>
                                 <td>@entry.Type</td>
                                 <td>@(entry.LastModified != default ? entry.LastModified.ToString("g") : "-")</td>
@@ -237,8 +240,7 @@
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 <button type="submit" class="btn btn-primary">Create Entry</button>                </div>
         </form>
-
-        <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+        <partial name="_ValidationScriptsPartial" />
         <script>
             // Toggle password visibility
             document.getElementById('togglePassword').addEventListener('click', function () {
@@ -320,4 +322,3 @@
         });
     </script>
 }
-

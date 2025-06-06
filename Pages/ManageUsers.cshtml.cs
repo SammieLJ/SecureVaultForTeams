@@ -29,13 +29,21 @@ namespace SecureVaultForTeams.Pages
         {
             Users = _dbService.GetAllUsers();
             Teams = _dbService.GetAllTeams();
+            _dbService.PopulateTeamNames(Users);
+        }
+
+        private bool IsInputModelValid()
+        {
+            return ModelState
+                .Where(kvp => kvp.Key.StartsWith("Input."))
+                .All(kvp => kvp.Value.Errors.Count == 0);
         }
 
         public IActionResult OnPost()
         {
             Users = _dbService.GetAllUsers();
             Teams = _dbService.GetAllTeams();
-            if (!ModelState.IsValid)
+            if (!IsInputModelValid())
             {
                 ErrorMessage = "Please fill in all required fields.";
                 return Page();
@@ -61,7 +69,8 @@ namespace SecureVaultForTeams.Pages
             SuccessMessage = "User created successfully.";
             Users = _dbService.GetAllUsers();
             Teams = _dbService.GetAllTeams();
-            return RedirectToPage();
+            //return RedirectToPage();
+            return Page();
         }
 
         public IActionResult OnPostEdit()

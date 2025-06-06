@@ -12,4 +12,10 @@
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.5" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Update="Pages\EditEntry.cshtml">
+      <DependentUpon>MigrateData.cshtml.cs</DependentUpon>
+    </Content>
+  </ItemGroup>
+
 </Project>

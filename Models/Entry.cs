@@ -19,7 +19,17 @@ public class Entry
     public EntryType Type { get; set; } = EntryType.Password;    public DateTime Created { get; set; }
     public DateTime LastModified { get; set; }
     public bool Deleted { get; set; } = false;
-    public string? TeamName { get; set; }
+    public string? TeamName { get; set; } = "No team assigned!";
+
+    public void Sanitize()
+    {
+        Title = Title ?? string.Empty;
+        Username = Username ?? string.Empty;
+        Password = Password ?? string.Empty;
+        Url = Url ?? string.Empty;
+        Notes = Notes ?? string.Empty;
+        TeamId = TeamId ?? string.Empty;
+    }
 }
 
 public enum EntryType

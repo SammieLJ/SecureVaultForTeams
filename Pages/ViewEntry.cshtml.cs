@@ -25,7 +25,11 @@ namespace SecureVaultForTeams.Pages
             }
 
             Entry = _dbService.GetEntryById(id);
-            
+            if (Entry != null)
+            {
+                Entry.Sanitize();
+            }
+
             if (Entry != null && !string.IsNullOrEmpty(Entry.TeamId))
             {
                 // Display Team info name for View

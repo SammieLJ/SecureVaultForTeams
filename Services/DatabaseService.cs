@@ -1,5 +1,7 @@
 using LiteDB;
 using SecureVaultForTeams.Models;
+using System.Text.Json;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace SecureVaultForTeams.Services;
 
@@ -112,8 +114,29 @@ public class DatabaseService
             .ToList();
     }
 
-    public List<Entry> GetAllEntries() =>
-        _entries.FindAll().ToList();
+    // Populates TeamName for each entry that has a TeamId
+    public void PopulateTeamNames(List<Entry> entries)
+    {
+        var teams = GetTeams().ToDictionary(t => t.Id, t => t.Name);
+        foreach (var entry in entries)
+        {
+            if (!string.IsNullOrEmpty(entry.TeamId) && teams.TryGetValue(entry.TeamId, out var teamName))
+            {
+                entry.TeamName = teamName;
+            }
+            else
+            {
+                entry.TeamName = string.Empty;
+            }
+        }
+    }
+
+    public List<Entry> GetAllEntries()
+    {
+        var entries = _entries.FindAll().ToList();
+        PopulateTeamNames(entries);
+        return entries;
+    }
     
     public async Task<List<Entry>> GetEntriesAsync(string search)
     {
@@ -126,7 +149,8 @@ public class DatabaseService
                 (e.Username ?? string.Empty).Contains(search, StringComparison.OrdinalIgnoreCase) ||
                 (e.Url ?? string.Empty).Contains(search, StringComparison.OrdinalIgnoreCase) ||
                 (e.Notes ?? string.Empty).Contains(search, StringComparison.OrdinalIgnoreCase) ||
-                (e.Category ?? string.Empty).Contains(search, StringComparison.OrdinalIgnoreCase)
+                (e.Category ?? string.Empty).Contains(search, StringComparison.OrdinalIgnoreCase) ||
+                (e.TeamName ?? string.Empty).Contains(search, StringComparison.OrdinalIgnoreCase)
             ).ToList();
         }
 
@@ -141,5 +165,99 @@ public class DatabaseService
     public bool DeleteUser(string userId)
     {
         return _users.Delete(userId);
+    }
+
+    // Populates TeamNames for each user that has TeamIds
+    public void PopulateTeamNames(List<User> users)
+    {
+        var teams = GetTeams().ToDictionary(t => t.Id, t => t.Name);
+        foreach (var user in users)
+        {
+            if (user.TeamIds != null && user.TeamIds.Count > 0)
+            {
+                var names = user.TeamIds
+                    .Where(id => teams.ContainsKey(id))
+                    .Select(id => teams[id])
+                    .ToList();
+                user.TeamNames = names.Count > 0 ? string.Join(", ", names) : string.Empty;
+            }
+            else
+            {
+                user.TeamNames = string.Empty;
+            }
+        }
+    }
+
+    // Populates TeamNames for a single user
+    public void PopulateTeamNames(User user)
+    {
+        var teams = GetTeams().ToDictionary(t => t.Id, t => t.Name);
+        if (user.TeamIds != null && user.TeamIds.Count > 0)
+        {
+            var names = user.TeamIds
+                .Where(id => teams.ContainsKey(id))
+                .Select(id => teams[id])
+                .ToList();
+            user.TeamNames = names.Count > 0 ? string.Join(", ", names) : string.Empty;
+        }
+        else
+        {
+            user.TeamNames = string.Empty;
+        }
+    }
+
+    // Bulk replace methods for import
+    public void ReplaceAllEntries(List<Entry> entries)
+    {
+        _entries.DeleteAll();
+        if (entries != null && entries.Count > 0)
+            _entries.InsertBulk(entries);
+    }
+
+    public void ReplaceAllUsers(List<User> users)
+    {
+        _users.DeleteAll();
+        if (users != null && users.Count > 0)
+            _users.InsertBulk(users);
+    }
+
+    public void ReplaceAllTeams(List<Team> teams)
+    {
+        _teams.DeleteAll();
+        if (teams != null && teams.Count > 0)
+            _teams.InsertBulk(teams);
+    }
+
+    public class MigrationData
+    {
+        public List<User> Users { get; set; } = new();
+        public List<Team> Teams { get; set; } = new();
+        public List<Entry> Entries { get; set; } = new();
+    }
+
+    public void ExportToJson(string path)
+    {
+        var data = new MigrationData
+        {
+            Users = GetAllUsers(),
+            Teams = GetAllTeams(),
+            Entries = GetAllEntries()
+        };
+        var options = new JsonSerializerOptions { WriteIndented = true };
+        var json = JsonSerializer.Serialize(data, options);
+        File.WriteAllText(path, json);
+    }
+
+    public void ImportFromJson(string path)
+    {
+        if (!File.Exists(path)) return;
+        var json = File.ReadAllText(path);
+        var data = JsonSerializer.Deserialize<MigrationData>(json);
+        if (data != null)
+        {
+            ReplaceAllUsers(data.Users);
+            ReplaceAllTeams(data.Teams);
+            ReplaceAllEntries(data.Entries);
+        }
     }
 }

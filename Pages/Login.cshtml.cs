@@ -40,7 +40,7 @@ public class LoginModel : PageModel
     {
         // First check if this is an admin user attempt
         var user = _dbService.GetUserByUsername(Username);
-        var isAdmin = user != null && user.Role == "Admin";
+        var isAdmin = user is { Role: "Admin" };
     
         // For admin users, we'll ignore some ModelState validations related to TeamId
         if (isAdmin && !string.IsNullOrEmpty(Username) && !string.IsNullOrEmpty(Password))

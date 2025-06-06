@@ -10,8 +10,10 @@ namespace SecureVaultForTeams.Pages
     {
         private readonly ILogger<EditEntryModel> _logger = logger;
 
+        public Entry Entry { get; set; } = new(); // For displaying data (GET)
+
         [BindProperty]
-        public Entry? Entry { get; set; } = new();
+        public Entry Input { get; set; } = new(); // For binding form data (POST)
         public List<Team> Teams { get; set; } = new();
 
         public List<string> Categories { get; set; } = new();
@@ -24,11 +26,23 @@ namespace SecureVaultForTeams.Pages
             }
 
             Entry = dbService.GetEntryById(id);
-            // Check if entry exists and user has access to it
             if (Entry == null)
             {
                 return NotFound();
             }
+            Entry.Sanitize();
+            // Fill Input with Entry values for form binding
+            Input = new Entry {
+                Id = Entry.Id,
+                Title = Entry.Title,
+                Username = Entry.Username,
+                Password = Entry.Password,
+                Url = Entry.Url,
+                Notes = Entry.Notes,
+                Category = Entry.Category,
+                TeamId = Entry.TeamId,
+                Created = Entry.Created
+            };
 
             // Check if user has access to the entry
             var currentTeamId = User.FindFirstValue("TeamId");
@@ -57,23 +71,32 @@ namespace SecureVaultForTeams.Pages
 
         public IActionResult OnPost()
         {
+            var isAdmin = User.IsInRole("Admin");
+            if (!isAdmin)
+            {
+                Input.TeamId = User.FindFirstValue("TeamId") ?? string.Empty;
+            }
+
             if (!ModelState.IsValid)
             {
-                Categories = dbService.GetCategories();
+                // Always reload categories and teams for redisplay
+                var categoriesPath = Path.Combine(Directory.GetCurrentDirectory(), "Data", "categories.json");
+                var categories = JsonHelper.SafeReadJsonFile(categoriesPath, new Dictionary<string, string[]>());
+                Categories = categories.TryGetValue("PasswordEntryCategories", out var category)
+                    ? category.ToList()
+                    : new List<string>();
                 Teams = dbService.GetTeams();
                 return Page();
             }
 
-            // Check if entry exists and user has access to it
-            var existingEntry = dbService.GetEntryById(Entry.Id);
-            //var existingEntry = Entry;
+            var existingEntry = dbService.GetEntryById(Input.Id);
             if (existingEntry == null)
             {
                 return NotFound();
             }
 
             var currentTeamId = User.FindFirstValue("TeamId");
-            var isAdmin = User.IsInRole("Admin");
+            isAdmin = User.IsInRole("Admin");
 
             if (!isAdmin && existingEntry.TeamId != currentTeamId)
             {
@@ -81,13 +104,13 @@ namespace SecureVaultForTeams.Pages
             }
 
             // Only update fields that are editable in the form
-            existingEntry.Title = Entry.Title;
-            existingEntry.Username = Entry.Username;
-            existingEntry.Password = Entry.Password;
-            existingEntry.Url = Entry.Url;
-            existingEntry.Notes = Entry.Notes;
-            existingEntry.Category = Entry.Category;
-            existingEntry.TeamId = Entry.TeamId;
+            existingEntry.Title = Input.Title;
+            existingEntry.Username = Input.Username;
+            existingEntry.Password = Input.Password;
+            existingEntry.Url = Input.Url;
+            existingEntry.Notes = Input.Notes;
+            existingEntry.Category = Input.Category;
+            existingEntry.TeamId = Input.TeamId;
             existingEntry.LastModified = DateTime.UtcNow;
 
             dbService.UpdateEntry(existingEntry);
@@ -97,8 +120,7 @@ namespace SecureVaultForTeams.Pages
 
         public IActionResult OnPostDelete()
         {
-            //var entry = dbService.GetEntryById(Entry.Id);
-            if (Entry == null)
+            if (Input == null)
             {
                 return NotFound();
             }
@@ -109,8 +131,8 @@ namespace SecureVaultForTeams.Pages
                 return Forbid();
             }
 
-            Entry.Deleted = true;
-            dbService.UpdateEntry(Entry);
+            Input.Deleted = true;
+            dbService.UpdateEntry(Input);
             return RedirectToPage("/Index");
         }
     }

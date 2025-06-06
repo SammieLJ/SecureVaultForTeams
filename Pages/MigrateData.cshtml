@@ -1,0 +1,28 @@
+@page
+@model MigrateDataModel
+@{
+    ViewData["Title"] = "Data Migration";
+}
+
+<h2>Data Migration</h2>
+
+@if (!string.IsNullOrEmpty(Model.Message))
+{
+    <div class="alert alert-info">@Model.Message</div>
+}
+
+<form method="post" enctype="multipart/form-data">
+    <div class="mb-3">
+        <button type="submit" name="action" value="export" class="btn btn-primary">Export to data.json</button>
+        <span class="ms-2">Exports all data to <code>Data/data.json</code></span>
+    </div>
+    <div class="mb-3">
+        <label for="importFile" class="form-label">Import from data.json</label>
+        <input type="file" class="form-control" id="importFile" name="importFile" accept=".json" />
+        <button type="submit" name="action" value="import" class="btn btn-danger mt-2">Import data.json to LiteDB</button>
+        <span class="ms-2">Replaces all data in LiteDB with <code>data.json</code></span>
+    </div>
+</form>
+
+<a href="/Index" class="btn btn-secondary mt-3">Back to Home</a>
+

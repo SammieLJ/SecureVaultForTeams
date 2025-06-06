@@ -1,9 +1,9 @@
-# SecureVault For Teams 0.1 Alpha
+# SecureVault For Teams 0.3 Beta
 
 
 SecureVaultForTeams is a web application for securely managing and sharing sensitive information (such as passwords, credentials, and secure notes) within teams. It is built with ASP.NET Core Razor Pages, uses LiteDB for storage, and supports team-based access control and administration.
 
-![SecureVaultForTeams Screenshot](docs/ScreenshotSecureVaultForTeams.png)
+![SecureVaultForTeams Screenshot](docs/ScreenshotSecureVaultForTeams2.png)
 ## Features
 - **Team-based password management**: Organize entries by teams, with each team having its own set of credentials and notes.
 - **Role-based access**: Admin users can manage teams and entries, while regular users have restricted access.
@@ -46,6 +46,21 @@ On first run, a default admin user and team are created automatically.
 - **Manage Entries**: Add, edit, or delete password entries for your teams.
 - **Edit Team**: Use the Edit button in Manage Teams to open a modal and update team details.
 
+## New Features (Beta)
+- **Data Migration:** Admins can now export all data (users, teams, entries) to `Data/data.json` and import from it via the new `/MigrateData` page. This allows easy backup, migration, or restore of your vault data.
+- **User Team Display:** The current user's teams are now shown in the navigation bar for quick context.
+- **Improved Model Validation:** Only relevant form fields are validated, reducing false validation errors.
+
+## Known Bugs & Limitations
+- **ModelState Ghost Properties:** Some unused model properties may still appear in ModelState, but are now ignored for validation.
+- **No granular import validation:** Importing from `data.json` will overwrite all existing data without preview or partial import.
+- **No audit log:** Data migration actions are not logged.
+
+## Usage Notes
+- Only users with the Admin role can access the migration page (`/MigrateData`).
+- The exported/imported file is always `Data/data.json`.
+- After import, all previous data in LiteDB is replaced.
+
 ## Project Structure
 - `Pages/` - Razor Pages for UI and logic
 - `Controllers/` - API controllers for AJAX endpoints
@@ -63,4 +78,3 @@ On first run, a default admin user and team are created automatically.
 ---
 
 Feel free to contribute or open issues for suggestions and bug reports!
-

@@ -48,6 +48,7 @@
                             <th>Username</th>
                             <th>Email</th>
                             <th>Role</th>
+                            <th>Team</th>
                             <th>Created</th>
                             <th class="text-center">Actions</th>
                         </tr>
@@ -59,6 +60,7 @@
                                 <td>@user.Username</td>
                                 <td>-</td> <!-- No email property in User model -->
                                 <td>@user.Role</td>
+                                <td>@user.TeamNames</td>
                                 <td>-</td> <!-- No created date in User model -->
                                 <td class="text-center">
                                     <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#editUserModal-@user.Id">Edit</button>
@@ -131,15 +133,15 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form method="post" asp-page-handler="Create">
+                <form method="post">
                     <div class="mb-3">
                         <label class="form-label">Username</label>
-                        <input type="text" class="form-control" name="CreateInput.Username" required />
+                        <input type="text" class="form-control" name="Input.Username" required />
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Password</label>
                         <div class="input-group">
-                            <input type="password" class="form-control" name="CreateInput.Password" id="createUserPasswordInput" required />
+                            <input type="password" class="form-control" name="Input.Password" id="createUserPasswordInput" required />
                             <button type="button" class="btn btn-outline-secondary" id="toggleCreateUserPassword">
                                 <i class="bi bi-eye" id="toggleCreateUserPasswordIcon"></i>
                             </button>
@@ -148,13 +150,21 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Teams</label>
-                        <select class="form-select" name="CreateInput.TeamIds[]" multiple required>
+                        <select class="form-select" name="Input.TeamIds[]" multiple required>
                             @foreach (var team in Model.Teams)
                             {
                                 <option value="@team.Id">@team.Name</option>
                             }
                         </select>
                         <div class="form-text">Hold Ctrl (Windows) or Cmd (Mac) to select multiple teams.</div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Role</label>
+                        <select class="form-select" name="Input.Role" required>
+                            <option value="">Select a role...</option>
+                            <option value="Admin">Admin</option>
+                            <option value="User">User</option>
+                        </select>
                     </div>
                     <button type="submit" class="btn btn-primary">Create User</button>
                 </form>
@@ -198,5 +208,3 @@
         }
     });
 </script>
-
-

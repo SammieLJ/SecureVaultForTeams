@@ -23,7 +23,7 @@ public class IndexModel : PageModel
     
     // Za CreateEntry page:
     [BindProperty]
-    public Entry Entry { get; set; } = new();
+    public Entry? Entry { get; set; } = new();
     public List<Team> Teams { get; set; } = new();
     
     public IndexModel(DatabaseService dbService)
@@ -55,6 +55,12 @@ public class IndexModel : PageModel
             entries = new List<Entry>();
         }
 
+        // Sanitize all entries before further processing
+        foreach (var entry in entries)
+        {
+            entry.Sanitize();
+        }
+
         if (!string.IsNullOrEmpty(SearchTerm))
         {
             entries = entries.Where(e =>
@@ -62,7 +68,8 @@ public class IndexModel : PageModel
                 e.Username.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ||
                 e.Url.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ||
                 e.Notes.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ||
-                e.Category.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase)
+                e.Category.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ||
+                e.TeamName.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase)
             ).ToList();
         }
 
@@ -98,6 +105,11 @@ public class IndexModel : PageModel
             .Skip((CurrentPage - 1) * PageSize)
             .Take(PageSize)
             .ToList();
+
+        if (entries == null)
+        {
+            entries = new List<Entry>();
+        }
 
         return Page();
     }

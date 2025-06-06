@@ -27,6 +27,25 @@
                     @if (User.Identity?.IsAuthenticated == true)
                     {
                         <ul class="navbar-nav">
+                            @inject SecureVaultForTeams.Services.DatabaseService DbService
+                            @{
+                                string? teamNames = null;
+                                if (User.Identity?.IsAuthenticated == true)
+                                {
+                                    var user = DbService.GetUserByUsername(User.Identity.Name);
+                                    if (user != null)
+                                    {
+                                        DbService.PopulateTeamNames(user);
+                                        teamNames = user.TeamNames;
+                                    }
+                                }
+                            }
+                            <li class="nav-item">
+                                @if (!string.IsNullOrEmpty(teamNames))
+                                {
+                                    <span class="nav-link text-primary">@teamNames</span>
+                                }
+                            </li>
                             <li class="nav-item">
                                 <span class="nav-link text-dark">@User.Identity.Name</span>
                             </li>
