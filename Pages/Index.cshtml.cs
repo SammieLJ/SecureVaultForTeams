@@ -24,6 +24,7 @@ public class IndexModel : PageModel
     // Za CreateEntry page:
     [BindProperty]
     public Entry? Entry { get; set; } = new();
+    
     public List<Team> Teams { get; set; } = new();
     
     public IndexModel(DatabaseService dbService)
@@ -38,8 +39,8 @@ public class IndexModel : PageModel
         SearchTerm = search ?? string.Empty;
         CurrentPage = currentPage;
         PageSize = pageSize;
-
         List<Entry> entries;
+        
         if (isAdmin)
         {
             entries = _dbService.GetAllEntries()
@@ -106,6 +107,9 @@ public class IndexModel : PageModel
             .Take(PageSize)
             .ToList();
 
+        // Fill TeamNames for each entry
+        _dbService.PopulateTeamNames(Entries);
+        
         if (entries == null)
         {
             entries = new List<Entry>();
@@ -152,6 +156,9 @@ public class IndexModel : PageModel
         if (!ModelState.IsValid)
         {
             Teams = _dbService.GetTeams();
+            //entries = _dbService.GetEntriesByTeam(CurrentTeamId); // for non-admin users
+            CurrentTeamId = User.FindFirst("TeamId")?.Value ?? string.Empty;
+            OnGet(CurrentTeamId, SearchTerm, null, false, CurrentPage, PageSize);
             return Page();
         }
 
