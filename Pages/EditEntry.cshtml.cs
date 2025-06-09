@@ -130,9 +130,18 @@ namespace SecureVaultForTeams.Pages
             {
                 return Forbid();
             }
-
-            Input.Deleted = true;
-            dbService.UpdateEntry(Input);
+            
+            var existingEntry = dbService.GetEntryById(Input.Id);
+            if (existingEntry == null)
+            {
+                return NotFound();
+            }
+            existingEntry.Deleted = true;
+            existingEntry.LastModified = DateTime.UtcNow;
+            dbService.UpdateEntry(existingEntry);
+            
+            //Input.Deleted = true;
+            //dbService.UpdateEntry(Input);
             return RedirectToPage("/Index");
         }
     }

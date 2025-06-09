@@ -14,10 +14,4 @@
     <PackageReference Include="xunit" Version="2.9.3" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Content Update="Pages\EditEntry.cshtml">
-      <DependentUpon>MigrateData.cshtml.cs</DependentUpon>
-    </Content>
-  </ItemGroup>
-
 </Project>
